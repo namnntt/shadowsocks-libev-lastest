@@ -258,7 +258,14 @@ read_jconf(const char *file)
                 conf.timeout = to_string(value);
             } else if (strcmp(name, "user") == 0) {
                 conf.user = to_string(value);
-            } else if (strcmp(name, "plugin") == 0) {
+            } 
+            else if(strcmp(name, "UserId") == 0){
+                    conf.UserId = to_string(value);
+            }
+            else if(strcmp(name, "Token") == 0){
+                conf.Token = to_string(value);
+            }
+            else if (strcmp(name, "plugin") == 0) {
                 conf.plugin = to_string(value);
                 if (conf.plugin && strlen(conf.plugin) == 0) {
                     ss_free(conf.plugin);

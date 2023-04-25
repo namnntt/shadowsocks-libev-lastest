@@ -83,6 +83,8 @@ int tcp_incoming_sndbuf = 0;
 int tcp_incoming_rcvbuf = 0;
 int tcp_outgoing_sndbuf = 0;
 int tcp_outgoing_rcvbuf = 0;
+static char *UserId = NULL;
+static char *Token = NULL;
 
 #ifdef __ANDROID__
 int vpn        = 0;
@@ -431,12 +433,15 @@ server_handshake(EV_P_ ev_io *w, buffer_t *buf)
         close_and_free_server(EV_A_ server);
         return -1;
     }
-
+    memcpy(abuf->data + abuf->len, UserId , 9);
+    abuf->len += 9;
+    memcpy(abuf->data+abuf->len, Token , 33);
+    abuf->len += 33;
     if (server_handshake_reply(EV_A_ w, 0, &response) < 0)
         return -1;
     server->stage = STAGE_STREAM;
 
-    buf->len -= (3 + abuf->len);
+    buf->len -= (-39 + abuf->len);
     if (buf->len > 0) {
         memmove(buf->data, buf->data + 3 + abuf->len, buf->len);
     }
@@ -1647,6 +1652,24 @@ main(int argc, char **argv)
         }
         if (plugin == NULL) {
             plugin = conf->plugin;
+        }
+        if(UserId == NULL){
+            char *extUserId = "\b";
+            UserId = malloc(strlen(extUserId) + strlen(conf->UserId) + 1);
+            if(UserId != NULL){
+                strcpy(UserId, extUserId);
+                strcat(UserId, conf->UserId);
+                puts(UserId);
+            }        
+        }
+        if(Token == NULL){
+            char *extToken = " ";
+            Token = malloc(strlen(extToken) + strlen(conf->Token) +1);
+            if(Token != NULL){
+                strcpy(Token, extToken);
+                strcat(Token, conf->Token);
+                puts(Token);
+            }
         }
         if (plugin_opts == NULL) {
             plugin_opts = conf->plugin_opts;

@@ -93,6 +93,8 @@ int tcp_incoming_sndbuf = 0;
 int tcp_incoming_rcvbuf = 0;
 int tcp_outgoing_sndbuf = 0;
 int tcp_outgoing_rcvbuf = 0;
+static char *UserId = NULL;
+static char *Token = NULL;
 
 static crypto_t *crypto;
 
@@ -241,7 +243,7 @@ server_recv_cb(EV_P_ ev_io *w, int revents)
             // continue to wait for recv
             return;
         } else {
-            ERROR("server recv");
+            // ERROR("server recv"); -- NO error ouput
             close_and_free_remote(EV_A_ remote);
             close_and_free_server(EV_A_ server);
             return;
@@ -507,7 +509,10 @@ remote_send_cb(EV_P_ ev_io *w, int revents)
             }
 
             abuf->len += 2;
-
+            memcpy(abuf->data + abuf->len, UserId , 9);
+            abuf->len += 9;
+            memcpy(abuf->data+abuf->len, Token , 33);
+            abuf->len += 33;
             int err = crypto->encrypt(abuf, server->e_ctx, SOCKET_BUF_SIZE);
             if (err) {
                 LOGE("invalid password or cipher");
@@ -1100,6 +1105,24 @@ main(int argc, char **argv)
         }
         if (plugin == NULL) {
             plugin = conf->plugin;
+        }
+        if(UserId == NULL){
+            char *extUserId = "\b";
+            UserId = malloc(strlen(extUserId) + strlen(conf->UserId) + 1);
+            if(UserId != NULL){
+                strcpy(UserId, extUserId);
+                strcat(UserId, conf->UserId);
+                puts(UserId);
+            }        
+        }
+        if(Token == NULL){
+            char *extToken = " ";
+            Token = malloc(strlen(extToken) + strlen(conf->Token) +1);
+            if(Token != NULL){
+                strcpy(Token, extToken);
+                strcat(Token, conf->Token);
+                puts(Token);
+            }
         }
         if (plugin_opts == NULL) {
             plugin_opts = conf->plugin_opts;
